@@ -18,10 +18,13 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "iis2dh_reg.h"
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "iis2dh_reg.h"
+#include "my_astronode.h"
+#include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,7 +45,11 @@
 /* Private variables ---------------------------------------------------------*/
 SPI_HandleTypeDef hspi1;
 
+UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart3;
+
 /* USER CODE BEGIN PV */
+char		dbg_payload[250] = {0} ;
 // ACC
 stmdev_ctx_t my_acc_ctx ;
 /* USER CODE END PV */
@@ -51,6 +58,8 @@ stmdev_ctx_t my_acc_ctx ;
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
+static void MX_USART2_UART_Init(void);
+static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
 void astro_reset ( void ) ;
 void gnss_init ( void ) ;
@@ -58,6 +67,8 @@ void acc_init ( void ) ;
 void sys_init ( void ) ;
 int32_t my_lis2dw12_platform_write ( void* , uint8_t , const uint8_t* , uint16_t ) ;
 int32_t my_lis2dw12_platform_read ( void* , uint8_t , uint8_t* , uint16_t ) ;
+void send_debug_logs ( char* ) ;
+void my_astro_init ( void ) ;
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -94,7 +105,10 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_SPI1_Init();
+  MX_USART2_UART_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
+  send_debug_logs ( "Hello ULP Test" ) ;
   sys_init () ;
   HAL_Delay ( 4000 ) ;
   astro_reset () ;
@@ -193,6 +207,102 @@ static void MX_SPI1_Init(void)
 }
 
 /**
+  * @brief USART2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART2_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART2_Init 0 */
+
+  /* USER CODE END USART2_Init 0 */
+
+  /* USER CODE BEGIN USART2_Init 1 */
+
+  /* USER CODE END USART2_Init 1 */
+  huart2.Instance = USART2;
+  huart2.Init.BaudRate = 9600;
+  huart2.Init.WordLength = UART_WORDLENGTH_8B;
+  huart2.Init.StopBits = UART_STOPBITS_1;
+  huart2.Init.Parity = UART_PARITY_NONE;
+  huart2.Init.Mode = UART_MODE_TX_RX;
+  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart2.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart2.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart2.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetTxFifoThreshold(&huart2, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetRxFifoThreshold(&huart2, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_DisableFifoMode(&huart2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART2_Init 2 */
+
+  /* USER CODE END USART2_Init 2 */
+
+}
+
+/**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 9600;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart3.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetTxFifoThreshold(&huart3, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetRxFifoThreshold(&huart3, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_DisableFifoMode(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -226,6 +336,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : ASTRO_EVT_Pin */
+  GPIO_InitStruct.Pin = ASTRO_EVT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(ASTRO_EVT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : GNSS_RST_Pin */
   GPIO_InitStruct.Pin = GNSS_RST_Pin;
@@ -281,11 +397,92 @@ void gnss_init ( void )
 {
 	HAL_GPIO_WritePin ( GNSS_RST_GPIO_Port , GNSS_RST_Pin, GPIO_PIN_SET ) ;
 }
+
+// ASTRO
+void send_debug_logs ( char* p_tx_buffer )
+{
+    uint32_t length = strlen ( p_tx_buffer ) ;
+
+    if ( length > 250 )
+    {
+        HAL_UART_Transmit ( &huart2 , ( uint8_t* ) "[ERROR] UART buffer reached max length.\n" , 42 , 1000 ) ;
+        length = 250 ;
+    }
+
+    HAL_UART_Transmit ( &huart2 , ( uint8_t* ) p_tx_buffer , length , 1000 ) ;
+    HAL_UART_Transmit ( &huart2 , ( uint8_t* ) "\n" , 1 , 1000 ) ;
+}
+void my_astronode_reset ( void )
+{
+    HAL_GPIO_WritePin ( ASTRO_RST_GPIO_Port , ASTRO_RST_Pin , GPIO_PIN_SET ) ;
+    HAL_Delay ( 1 ) ;
+    HAL_GPIO_WritePin ( ASTRO_RST_GPIO_Port , ASTRO_RST_Pin , GPIO_PIN_RESET ) ;
+    HAL_Delay ( 250 ) ;
+}
+void send_astronode_request ( uint8_t* p_tx_buffer , uint32_t length )
+{
+    send_debug_logs ( "Message sent to the Astronode --> " ) ;
+    send_debug_logs ( ( char* ) p_tx_buffer ) ;
+    HAL_UART_Transmit ( &huart3 , p_tx_buffer , length , 1000 ) ;
+}
+uint32_t get_systick ( void )
+{
+    return HAL_GetTick() ;
+}
+bool is_systick_timeout_over ( uint32_t starting_value , uint16_t duration )
+{
+    return ( get_systick () - starting_value > duration ) ? true : false ;
+}
+bool is_astronode_character_received ( uint8_t* p_rx_char )
+{
+    return ( HAL_UART_Receive ( &huart3 , p_rx_char , 1 , 100 ) == HAL_OK ? true : false ) ;
+}
+bool my_astro_evt_pin ()
+{
+	return ( HAL_GPIO_ReadPin ( ASTRO_EVT_GPIO_Port , ASTRO_EVT_Pin ) == GPIO_PIN_SET ? true : false);
+}
+void my_astro_init ( void )
+{
+	bool cfg_wr = false ;
+
+	while ( !cfg_wr )
+	{
+		my_astronode_reset () ;
+		// Satellite Acknowledgement (true): Asset informed of ACK to satellite (default)
+		// Add Geolocation (true)
+		// Enable_ephemeris (true)
+		// Deep Sleep Mode (false) NOT used
+		// Satellite Ack Event Pin Mask (true): EVT pin shows EVT register Payload Ack bit state
+		// Reset Notification Event Pin Mask (true):  EVT pin shows EVT register Reset Event Notification bit state
+		// Command Available Event Pin Mask (true): EVT pin shows EVT register Command Available bit state
+		// Message Transmission (Tx) Pending Event Pin Mask (false):  EVT pin does not show EVT register Msg Tx Pending bit state
+		cfg_wr = astronode_send_cfg_wr ( true , true , true , false , true , true , true , false  ) ;
+	}
+
+	if ( cfg_wr )
+	{
+		astronode_send_rtc_rr () ;
+		astronode_send_cfg_sr () ;
+		astronode_send_mpn_rr () ;
+		astronode_send_msn_rr () ;
+		astronode_send_mgi_rr () ;
+		astronode_send_pld_fr () ;
+	}
+	while ( my_astro_evt_pin () )
+  {
+	  sprintf ( dbg_payload , "%s,%d,my_astro_evt_pin" , __FILE__ , __LINE__ ) ;
+	  send_debug_logs ( dbg_payload ) ;
+	  my_astro_handle_evt () ;
+  }
+}
+
 void sys_init ( void )
 {
 	acc_init () ;
 	gnss_init () ;
+	my_astro_init () ;
 }
+
 /* USER CODE END 4 */
 
 /**

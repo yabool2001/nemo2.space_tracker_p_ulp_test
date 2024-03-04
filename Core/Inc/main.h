@@ -67,6 +67,8 @@ void Error_Handler(void);
 #define ACC_MOSI_GPIO_Port GPIOA
 #define ASTRO_RST_Pin GPIO_PIN_1
 #define ASTRO_RST_GPIO_Port GPIOB
+#define ASTRO_EVT_Pin GPIO_PIN_2
+#define ASTRO_EVT_GPIO_Port GPIOB
 #define GNSS_RST_Pin GPIO_PIN_13
 #define GNSS_RST_GPIO_Port GPIOB
 #define GNSS_PWR_SW_Pin GPIO_PIN_15

@@ -1,0 +1,2 @@
+../Core/Src/my_astronode.c:9:6:my_astro_handle_evt	4
+../Core/Src/my_astronode.c:32:6:my_astro_log	1

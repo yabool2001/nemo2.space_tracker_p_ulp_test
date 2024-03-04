@@ -1,0 +1,11 @@
+../Core/Src/main.c:72:5:main	1
+../Core/Src/main.c:119:6:SystemClock_Config	3
+../Core/Src/main.c:160:13:MX_SPI1_Init	2
+../Core/Src/main.c:200:13:MX_GPIO_Init	1
+../Core/Src/main.c:242:6:astro_reset	1
+../Core/Src/main.c:248:6:acc_init	1
+../Core/Src/main.c:258:9:my_lis2dw12_platform_write	1
+../Core/Src/main.c:269:9:my_lis2dw12_platform_read	1
+../Core/Src/main.c:280:6:gnss_init	1
+../Core/Src/main.c:284:6:sys_init	1
+../Core/Src/main.c:295:6:Error_Handler	1

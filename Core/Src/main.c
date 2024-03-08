@@ -321,7 +321,10 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(ACC_CS_GPIO_Port, ACC_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, ASTRO_RST_Pin|GNSS_RST_Pin|GNSS_PWR_SW_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, ASTRO_RST_Pin|GNSS_PWR_SW_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GNSS_RST_GPIO_Port, GNSS_RST_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : ACC_CS_Pin */
   GPIO_InitStruct.Pin = ACC_CS_Pin;

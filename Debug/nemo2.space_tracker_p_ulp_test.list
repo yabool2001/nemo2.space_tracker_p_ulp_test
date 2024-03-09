@@ -41,11 +41,11 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  18 .debug_line   00011cfb  00000000  00000000  00053374  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_str    000b73c3  00000000  00000000  0006506f  2**0
+ 19 .debug_str    000b73bf  00000000  00000000  0006506f  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .debug_frame  000040c4  00000000  00000000  0011c434  2**2
+ 20 .debug_frame  000040c4  00000000  00000000  0011c430  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .debug_line_str 00000066  00000000  00000000  001204f8  2**0
+ 21 .debug_line_str 00000066  00000000  00000000  001204f4  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -4787,11 +4787,11 @@ void acc_init ( void )
 {
  8001f88:	b580      	push	{r7, lr}
  8001f8a:	af00      	add	r7, sp, #0
-	my_acc_ctx.write_reg = my_lis2dw12_platform_write ;
+	my_acc_ctx.write_reg = my_st_acc_platform_write ;
  8001f8c:	4b0d      	ldr	r3, [pc, #52]	; (8001fc4 <acc_init+0x3c>)
  8001f8e:	4a0e      	ldr	r2, [pc, #56]	; (8001fc8 <acc_init+0x40>)
  8001f90:	601a      	str	r2, [r3, #0]
-	my_acc_ctx.read_reg = my_lis2dw12_platform_read ;
+	my_acc_ctx.read_reg = my_st_acc_platform_read ;
  8001f92:	4b0c      	ldr	r3, [pc, #48]	; (8001fc4 <acc_init+0x3c>)
  8001f94:	4a0d      	ldr	r2, [pc, #52]	; (8001fcc <acc_init+0x44>)
  8001f96:	605a      	str	r2, [r3, #4]
@@ -4824,9 +4824,9 @@ void acc_init ( void )
  8001fcc:	0800203f 	.word	0x0800203f
  8001fd0:	2000007c 	.word	0x2000007c
 
-08001fd4 <my_lis2dw12_platform_write>:
+08001fd4 <my_st_acc_platform_write>:
 // ACC LL Function
-int32_t my_lis2dw12_platform_write ( void *handle , uint8_t reg , const uint8_t *bufp , uint16_t len )
+int32_t my_st_acc_platform_write ( void *handle , uint8_t reg , const uint8_t *bufp , uint16_t len )
 {
  8001fd4:	b5b0      	push	{r4, r5, r7, lr}
  8001fd6:	b084      	sub	sp, #16
@@ -4885,9 +4885,9 @@ int32_t my_lis2dw12_platform_write ( void *handle , uint8_t reg , const uint8_t 
  800203a:	b004      	add	sp, #16
  800203c:	bdb0      	pop	{r4, r5, r7, pc}
 
-0800203e <my_lis2dw12_platform_read>:
+0800203e <my_st_acc_platform_read>:
 
-int32_t my_lis2dw12_platform_read ( void *handle , uint8_t reg , uint8_t *bufp , uint16_t len )
+int32_t my_st_acc_platform_read ( void *handle , uint8_t reg , uint8_t *bufp , uint16_t len )
 {
  800203e:	b5b0      	push	{r4, r5, r7, lr}
  8002040:	b084      	sub	sp, #16

@@ -5,8 +5,8 @@
 ../Core/Src/main.c:264:13:MX_USART3_UART_Init	5
 ../Core/Src/main.c:312:13:MX_GPIO_Init	1
 ../Core/Src/main.c:364:6:acc_init	1
-../Core/Src/main.c:374:9:my_lis2dw12_platform_write	1
-../Core/Src/main.c:385:9:my_lis2dw12_platform_read	1
+../Core/Src/main.c:374:9:my_st_acc_platform_write	1
+../Core/Src/main.c:385:9:my_st_acc_platform_read	1
 ../Core/Src/main.c:396:6:gnss_init	1
 ../Core/Src/main.c:400:6:gnss_sw_off	1
 ../Core/Src/main.c:407:6:send_debug_logs	2

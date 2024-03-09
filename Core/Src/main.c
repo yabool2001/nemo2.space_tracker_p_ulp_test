@@ -65,8 +65,8 @@ void astro_reset ( void ) ;
 void gnss_init ( void ) ;
 void acc_init ( void ) ;
 void sys_init ( void ) ;
-int32_t my_lis2dw12_platform_write ( void* , uint8_t , const uint8_t* , uint16_t ) ;
-int32_t my_lis2dw12_platform_read ( void* , uint8_t , uint8_t* , uint16_t ) ;
+int32_t my_st_acc_platform_write ( void* , uint8_t , const uint8_t* , uint16_t ) ;
+int32_t my_st_acc_platform_read ( void* , uint8_t , uint8_t* , uint16_t ) ;
 void send_debug_logs ( char* ) ;
 void my_astro_init ( void ) ;
 /* USER CODE END PFP */
@@ -363,15 +363,15 @@ static void MX_GPIO_Init(void)
 
 void acc_init ( void )
 {
-	my_acc_ctx.write_reg = my_lis2dw12_platform_write ;
-	my_acc_ctx.read_reg = my_lis2dw12_platform_read ;
+	my_acc_ctx.write_reg = my_st_acc_platform_write ;
+	my_acc_ctx.read_reg = my_st_acc_platform_read ;
 	my_acc_ctx.handle = &hspi1 ;
 	iis2dh_full_scale_set ( &my_acc_ctx , IIS2DH_2g ) ;
 	iis2dh_operating_mode_set ( &my_acc_ctx , IIS2DH_LP_8bit ) ;
 	iis2dh_data_rate_set ( &my_acc_ctx , IIS2DH_ODR_10Hz ) ;
 }
 // ACC LL Function
-int32_t my_lis2dw12_platform_write ( void *handle , uint8_t reg , const uint8_t *bufp , uint16_t len )
+int32_t my_st_acc_platform_write ( void *handle , uint8_t reg , const uint8_t *bufp , uint16_t len )
 {
 	HAL_GPIO_WritePin	( ACC_CS_GPIO_Port , ACC_CS_Pin , GPIO_PIN_RESET ) ;
 	HAL_Delay ( 20 ) ;
@@ -382,7 +382,7 @@ int32_t my_lis2dw12_platform_write ( void *handle , uint8_t reg , const uint8_t 
 	return 0;
 }
 
-int32_t my_lis2dw12_platform_read ( void *handle , uint8_t reg , uint8_t *bufp , uint16_t len )
+int32_t my_st_acc_platform_read ( void *handle , uint8_t reg , uint8_t *bufp , uint16_t len )
 {
 	reg |= 0x80;
 	HAL_GPIO_WritePin ( ACC_CS_GPIO_Port , ACC_CS_Pin , GPIO_PIN_RESET) ;

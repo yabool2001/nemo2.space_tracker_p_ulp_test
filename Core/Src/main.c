@@ -111,7 +111,9 @@ int main(void)
   send_debug_logs ( "Hello ULP Test" ) ;
   sys_init () ;
   HAL_Delay ( 4000 ) ;
-  astro_reset () ;
+  HAL_UART_DeInit ( &huart2 ) ;
+  HAL_UART_DeInit ( &huart3 ) ;
+  HAL_Delay ( 1000 ) ;
   HAL_PWREx_EnterSHUTDOWNMode () ;
   /* USER CODE END 2 */
 
@@ -222,7 +224,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 9600;
+  huart2.Init.BaudRate = 115200;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;
@@ -358,12 +360,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void astro_reset ( void )
-{
-	HAL_GPIO_WritePin ( ASTRO_RST_GPIO_Port , ASTRO_RST_Pin, GPIO_PIN_SET ) ;
-	HAL_Delay ( 100 ) ;
-	HAL_GPIO_WritePin ( ASTRO_RST_GPIO_Port , ASTRO_RST_Pin, GPIO_PIN_RESET ) ;
-}
+
 void acc_init ( void )
 {
 	my_acc_ctx.write_reg = my_lis2dw12_platform_write ;
@@ -400,7 +397,12 @@ void gnss_init ( void )
 {
 	HAL_GPIO_WritePin ( GNSS_RST_GPIO_Port , GNSS_RST_Pin, GPIO_PIN_SET ) ;
 }
-
+void gnss_sw_off ( void )
+{
+		HAL_GPIO_WritePin ( GNSS_PWR_SW_GPIO_Port , GNSS_PWR_SW_Pin , GPIO_PIN_RESET ) ;
+		HAL_GPIO_WritePin ( GNSS_RST_GPIO_Port , GNSS_RST_Pin , GPIO_PIN_RESET ) ;
+		//HAL_UART_DeInit ( &HUART_GNSS ) ;
+}
 // ASTRO
 void send_debug_logs ( char* p_tx_buffer )
 {
@@ -469,7 +471,7 @@ void my_astro_init ( void )
 		astronode_send_mpn_rr () ;
 		astronode_send_msn_rr () ;
 		astronode_send_mgi_rr () ;
-		astronode_send_pld_fr () ;
+		astronode_send_pld_fr () ; // The module's entire payload queue can be cleared with the Payload Free Request PLD_FR.
 	}
 	while ( my_astro_evt_pin () )
   {
@@ -482,7 +484,7 @@ void my_astro_init ( void )
 void sys_init ( void )
 {
 	acc_init () ;
-	gnss_init () ;
+	gnss_sw_off () ;
 	my_astro_init () ;
 }
 

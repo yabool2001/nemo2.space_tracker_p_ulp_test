@@ -388,9 +388,9 @@ void acc_init ( void )
 	//  Configuration: 2g, LP and 25Hz gives 4 uA of ACC power consumption
 	iis2dh_full_scale_set ( &my_acc_ctx , IIS2DH_2g ) ; // FS bits [ 2 g - 16 g ]
 	iis2dh_operating_mode_set ( &my_acc_ctx , IIS2DH_LP_8bit ) ; // [ High Resolution , Normal Mode , Low Power]
-	//iis2dh_data_rate_set ( &my_acc_ctx , IIS2DH_ODR_10Hz ) ; // Below 25Hz it will be hard to calculate free-fall
-	iis2dh_data_rate_set ( &my_acc_ctx , IIS2DH_POWER_DOWN ) ; // Below 25Hz it will be hard to calculate free-fall
-	//iis2dh_fifo_mode_set ( &my_acc_ctx , IIS2DH_FIFO_MODE ) ; // FIFO mode allows consistent power saving for the system, since the host processor does not need to	continuously poll data from the sensor, but it can wake up only when needed and burst the significant data out from the FIFO.
+	iis2dh_data_rate_set ( &my_acc_ctx , IIS2DH_ODR_10Hz ) ; // Below 25Hz it will be hard to calculate free-fall
+	//iis2dh_data_rate_set ( &my_acc_ctx , IIS2DH_POWER_DOWN ) ; // Below 25Hz it will be hard to calculate free-fall
+	iis2dh_fifo_mode_set ( &my_acc_ctx , IIS2DH_FIFO_MODE ) ; // FIFO mode allows consistent power saving for the system, since the host processor does not need to	continuously poll data from the sensor, but it can wake up only when needed and burst the significant data out from the FIFO.
 
 	// Temperature sensor enable.
 	// iis2dh_temperature_meas_set( &my_acc_ctx , IIS2DH_TEMP_ENABLE ) ;

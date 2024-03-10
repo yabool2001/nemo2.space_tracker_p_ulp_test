@@ -111,10 +111,16 @@ int main(void)
   send_debug_logs ( "Hello ULP Test" ) ;
   sys_init () ;
   HAL_Delay ( 4000 ) ;
-  HAL_UART_DeInit ( &huart2 ) ;
-  HAL_UART_DeInit ( &huart3 ) ;
-  HAL_Delay ( 1000 ) ;
-  HAL_PWREx_EnterSHUTDOWNMode () ;
+  //HAL_UART_DeInit ( &huart2 ) ;
+  //HAL_UART_DeInit ( &huart3 ) ;
+  //HAL_Delay ( 1000 ) ;
+  //HAL_PWREx_EnterSHUTDOWNMode () ;
+
+  HAL_SuspendTick () ;
+  HAL_PWR_EnterSTOPMode ( PWR_LOWPOWERREGULATOR_ON , PWR_STOPENTRY_WFE ) ;
+
+  //send_debug_logs ( "Wake-up" ) ;
+  //HAL_ResumeTick () ;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -328,6 +334,12 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GNSS_RST_GPIO_Port, GNSS_RST_Pin, GPIO_PIN_SET);
 
+  /*Configure GPIO pins : ACC_INT1_Pin ACC_INT2_Pin */
+  GPIO_InitStruct.Pin = ACC_INT1_Pin|ACC_INT2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
   /*Configure GPIO pin : ACC_CS_Pin */
   GPIO_InitStruct.Pin = ACC_CS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -363,12 +375,34 @@ static void MX_GPIO_Init(void)
 
 void acc_init ( void )
 {
+	uint8_t id = 0 ;
+
 	my_acc_ctx.write_reg = my_st_acc_platform_write ;
 	my_acc_ctx.read_reg = my_st_acc_platform_read ;
 	my_acc_ctx.handle = &hspi1 ;
-	iis2dh_full_scale_set ( &my_acc_ctx , IIS2DH_2g ) ;
-	iis2dh_operating_mode_set ( &my_acc_ctx , IIS2DH_LP_8bit ) ;
-	iis2dh_data_rate_set ( &my_acc_ctx , IIS2DH_ODR_10Hz ) ;
+
+	iis2dh_device_id_get ( &my_acc_ctx , &id ) ;
+	sprintf ( dbg_payload , "IIS2DH_ID id = %u, my_acc_id = %u" , 0x33U , (uint16_t) id ) ;
+	send_debug_logs ( dbg_payload ) ;
+
+	//  Configuration: 2g, LP and 25Hz gives 4 uA of ACC power consumption
+	iis2dh_full_scale_set ( &my_acc_ctx , IIS2DH_2g ) ; // FS bits [ 2 g - 16 g ]
+	iis2dh_operating_mode_set ( &my_acc_ctx , IIS2DH_LP_8bit ) ; // [ High Resolution , Normal Mode , Low Power]
+	//iis2dh_data_rate_set ( &my_acc_ctx , IIS2DH_ODR_10Hz ) ; // Below 25Hz it will be hard to calculate free-fall
+	iis2dh_data_rate_set ( &my_acc_ctx , IIS2DH_POWER_DOWN ) ; // Below 25Hz it will be hard to calculate free-fall
+	//iis2dh_fifo_mode_set ( &my_acc_ctx , IIS2DH_FIFO_MODE ) ; // FIFO mode allows consistent power saving for the system, since the host processor does not need to	continuously poll data from the sensor, but it can wake up only when needed and burst the significant data out from the FIFO.
+
+	// Temperature sensor enable.
+	// iis2dh_temperature_meas_set( &my_acc_ctx , IIS2DH_TEMP_ENABLE ) ;
+	// To retrieve the temperature sensor data the BDU bit in CTRL_REG4 (23h) must be set to 1.
+	// iis2dh_block_data_update_set ( &my_acc_ctx , PROPERTY_ENABLE ) ;
+
+	// Interrupt request on INT1_SRC (31h) and INT2_SRC (35h) latched. Register cleared by reading INTx_SRC itself.
+	//iis2dh_int1_pin_notification_mode_set ( &my_acc_ctx , IIS2DH_INT2_LATCHED ) ;
+	//iis2dh_int2_pin_notification_mode_set ( &my_acc_ctx , IIS2DH_INT2_LATCHED ) ;
+
+	// The IIS2DH may also be configured to generate an inertial wake-up and free-fall interrupt signal according to a programmed acceleration event along the enabled axes. Both free-fall and wake-up can be available simultaneously on two different pins.
+
 }
 // ACC LL Function
 int32_t my_st_acc_platform_write ( void *handle , uint8_t reg , const uint8_t *bufp , uint16_t len )

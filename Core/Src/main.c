@@ -51,6 +51,7 @@ TIM_HandleTypeDef htim6;
 
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
+UART_HandleTypeDef huart5;
 
 /* USER CODE BEGIN PV */
 char		dbg_payload[250] = {0} ;
@@ -66,15 +67,18 @@ static void MX_USART2_UART_Init(void);
 static void MX_USART3_UART_Init(void);
 static void MX_TIM6_Init(void);
 static void MX_RTC_Init(void);
+static void MX_USART5_UART_Init(void);
 /* USER CODE BEGIN PFP */
 void astro_reset ( void ) ;
 void gnss_init ( void ) ;
+void gnss_sw_off ( void ) ;
 void acc_init ( void ) ;
 void sys_init ( void ) ;
 int32_t my_st_acc_platform_write ( void* , uint8_t , const uint8_t* , uint16_t ) ;
 int32_t my_st_acc_platform_read ( void* , uint8_t , uint8_t* , uint16_t ) ;
 void send_debug_logs ( char* ) ;
 void my_astro_init ( void ) ;
+void my_astro_deinit ( void ) ;
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -115,15 +119,22 @@ int main(void)
   MX_USART3_UART_Init();
   MX_TIM6_Init();
   MX_RTC_Init();
+  MX_USART5_UART_Init();
   /* USER CODE BEGIN 2 */
   send_debug_logs ( "Hello ULP Test" ) ;
   sys_init () ;
-  HAL_Delay ( 1000 ) ;
+
+  HAL_Delay ( 5000 ) ;
   //HAL_UART_DeInit ( &huart2 ) ;
   //HAL_UART_DeInit ( &huart3 ) ;
   //HAL_Delay ( 1000 ) ;
   //HAL_PWREx_EnterSHUTDOWNMode () ;
 
+  gnss_sw_off () ;
+  //my_astro_deinit () ;
+  __HAL_RCC_GPIOC_CLK_DISABLE () ;
+  __HAL_RCC_GPIOD_CLK_DISABLE () ;
+  __HAL_RCC_GPIOF_CLK_DISABLE () ;
   HAL_SuspendTick () ;
   HAL_PWR_EnterSTOPMode ( PWR_LOWPOWERREGULATOR_ON , PWR_STOPENTRY_WFE ) ;
 
@@ -429,6 +440,42 @@ static void MX_USART3_UART_Init(void)
 }
 
 /**
+  * @brief USART5 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART5_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART5_Init 0 */
+
+  /* USER CODE END USART5_Init 0 */
+
+  /* USER CODE BEGIN USART5_Init 1 */
+
+  /* USER CODE END USART5_Init 1 */
+  huart5.Instance = USART5;
+  huart5.Init.BaudRate = 9600;
+  huart5.Init.WordLength = UART_WORDLENGTH_8B;
+  huart5.Init.StopBits = UART_STOPBITS_1;
+  huart5.Init.Parity = UART_PARITY_NONE;
+  huart5.Init.Mode = UART_MODE_TX_RX;
+  huart5.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart5.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart5.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart5.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart5.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART5_Init 2 */
+
+  /* USER CODE END USART5_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -443,18 +490,30 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(ACC_CS_GPIO_Port, ACC_CS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, ASTRO_RST_Pin|GNSS_PWR_SW_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, ASTRO_WKUP_Pin|ASTRO_RST_Pin|RF_SW_CTL1_Pin|RF_SW_CTL2_Pin
+                          |GNSS_PWR_SW_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GNSS_RST_GPIO_Port, GNSS_RST_Pin, GPIO_PIN_SET);
 
-  /*Configure GPIO pins : ACC_INT1_Pin ACC_INT2_Pin */
-  GPIO_InitStruct.Pin = ACC_INT1_Pin|ACC_INT2_Pin;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_0|LDB_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin : ACC_INT1_IT_Pin */
+  GPIO_InitStruct.Pin = ACC_INT1_IT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(ACC_INT1_IT_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : ACC_INT2_Pin ALS_Pin */
+  GPIO_InitStruct.Pin = ACC_INT2_Pin|ALS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
@@ -466,18 +525,22 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(ACC_CS_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : ASTRO_RST_Pin GNSS_PWR_SW_Pin */
-  GPIO_InitStruct.Pin = ASTRO_RST_Pin|GNSS_PWR_SW_Pin;
+  /*Configure GPIO pins : ASTRO_WKUP_Pin ASTRO_RST_Pin RF_SW_CTL1_Pin RF_SW_CTL2_Pin
+                           GNSS_PWR_SW_Pin */
+  GPIO_InitStruct.Pin = ASTRO_WKUP_Pin|ASTRO_RST_Pin|RF_SW_CTL1_Pin|RF_SW_CTL2_Pin
+                          |GNSS_PWR_SW_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : ASTRO_EVT_Pin */
-  GPIO_InitStruct.Pin = ASTRO_EVT_Pin;
+  /*Configure GPIO pins : ASTRO_EVT_Pin ASTRO_ANT_USE_Pin GNSS_FIX3D_Pin GNSS_JAM_Pin
+                           GNSS_GEOF_Pin */
+  GPIO_InitStruct.Pin = ASTRO_EVT_Pin|ASTRO_ANT_USE_Pin|GNSS_FIX3D_Pin|GNSS_JAM_Pin
+                          |GNSS_GEOF_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(ASTRO_EVT_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : GNSS_RST_Pin */
   GPIO_InitStruct.Pin = GNSS_RST_Pin;
@@ -485,6 +548,19 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GNSS_RST_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PD0 LDB_Pin */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|LDB_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PD2 SW2_Pin */
+  GPIO_InitStruct.Pin = GPIO_PIN_2|SW2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
@@ -552,9 +628,9 @@ void gnss_init ( void )
 }
 void gnss_sw_off ( void )
 {
-		HAL_GPIO_WritePin ( GNSS_PWR_SW_GPIO_Port , GNSS_PWR_SW_Pin , GPIO_PIN_RESET ) ;
-		HAL_GPIO_WritePin ( GNSS_RST_GPIO_Port , GNSS_RST_Pin , GPIO_PIN_RESET ) ;
-		//HAL_UART_DeInit ( &HUART_GNSS ) ;
+	HAL_GPIO_WritePin ( GNSS_PWR_SW_GPIO_Port , GNSS_PWR_SW_Pin , GPIO_PIN_RESET ) ;
+	HAL_GPIO_WritePin ( GNSS_RST_GPIO_Port , GNSS_RST_Pin , GPIO_PIN_RESET ) ;
+	HAL_UART_DeInit ( &huart5 ) ;
 }
 // ASTRO
 void send_debug_logs ( char* p_tx_buffer )
@@ -633,11 +709,15 @@ void my_astro_init ( void )
 	  my_astro_handle_evt () ;
   }
 }
+void my_astro_deinit ( void )
+{
+	HAL_UART_DeInit ( &huart3 ) ;
+}
+
 
 void sys_init ( void )
 {
 	acc_init () ;
-	gnss_sw_off () ;
 	my_astro_init () ;
 }
 
